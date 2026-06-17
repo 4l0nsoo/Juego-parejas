@@ -33,11 +33,6 @@ def generarTablero():
             card = tk.Label(frame_grid,image=img1,bg="white",highlightbackground="#3541b0",highlightthickness=3,fg="white",font=("Arial",24,"bold"), width=cardWidth, height=cardHeight)
             card.grid(row=fila, column=columna, padx=30, pady=10, )
             # fila_carta.append(card)
-
-    
-
-
 img1 = tk.PhotoImage(file="./recursos/hamburguesa.png")
 menu()
-
 root.mainloop()
