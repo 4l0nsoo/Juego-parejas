@@ -1,29 +1,52 @@
 import math 
 import tkinter as tk
-
-#preguntas: se puede usar imports? o todo en un solo archivo
-
-#roles; que necesito? cual es el siguiente paso? necesito hacer algo para avanzar?
-#diseño
-#funciones
+import time
+import random
 
 #idea: juego de parejas por dificultades, facil = 4(rejilla 2x4) parejas, normal = 8(regilla 4x4), dificil 12(regilla 6x4)
+
+#Necesito extraer valores de las funciones que al seleccionar el boton de Tiempo y dificultad extraer esos valores y por lo menos el valor del tiempo pasarlo a la funcion actualizar temporizador, dificultad pasarle el por argumentos dificultad, que facil sea 2, medio sea 4 y dificil sea 6 para que asi al reemplazarlo por columna in range (0, dificultad) cree mas o menos columnas, tambien debo agregar las imagenes en matriz cartas para revolverlas con random shuffle 
+
 root = tk.Tk()
 root.geometry("900x900")
 root.config(bg="#EB9401")
 
 cardWidth = 115
 cardHeight =int(cardWidth * 7 / 5)
+tiempo = 100
+texto_tiempo = tk.StringVar()
+texto_tiempo.set("time has no been set yet")
 
 matriz_botones = []
 matriz_cartas = []
 eleccion = []
 
+
+
+def actualizar_temporizador(tiempo, tiempo_cronometro):
+    if tiempo == -1:  # ilimitado, cuenta hacia arriba
+        mins, secs = divmod(tiempo_cronometro, 60)  # necesitas otra variable para esto
+        texto_tiempo.set(f"{mins:02d}:{secs:02d}")
+        tiempo_cronometro +=1
+        root.after(1000, actualizar_temporizador, tiempo, tiempo_cronometro)
+    elif tiempo > 0:  # cuenta regresiva
+        mins, secs = divmod(tiempo, 60)
+        texto_tiempo.set(f"{mins:02d}:{secs:02d}")
+        tiempo -= 1
+        root.after(1000, actualizar_temporizador, tiempo, tiempo_cronometro)
+    else:
+        texto_tiempo.set("¡Tiempo terminado!")
+
 #Esta funcion es diseñada para las cartas y su ubicacion
-def generarTablero():
+def generarTablero(dificultad):
+    #Temporizador
+    lbl_tiempo = tk.Label(root, textvariable=texto_tiempo, font=("Lucida Console", 18, "bold"),bg="#EB9401", fg="white")
+    lbl_tiempo.pack(pady=5)
+    
     frame_grid = tk.Frame(root)
     frame_grid.pack(pady=(20, 0))
-    for columna in range(0,4):
+
+    for columna in range(0,dificultad):
         fila_carta=[]
         for fila in range(0,4):
             card = tk.Button(frame_grid,image=img1,bg="#BD2600",activebackground="#9C0015",fg="white",font=("Lucida Console",20,"bold"), width=cardWidth, height=cardHeight)
@@ -52,22 +75,53 @@ img1 = tk.PhotoImage(file="./recursos/interrogacion.png")
 img2 = tk.PhotoImage(file="./recursos/hamburguesa.png")
 
 #funcion para quitar el menú y que aparezcan solo las cartas
-def comenzarPartida():
-    for elemento in root.winfo_children():
-        elemento.pack_forget() #hacemos que cada cosa dentro del menú se quite
-    generarTablero()
+
 
 def menu():
     #para mostrar en pantalla el nivel de dificultad que seleccione el jugador:
     difiSelect=tk.StringVar()
-    difiSelect.set('Normal')
+    difiSelect.set('Medio')
+    diff=tk.IntVar()
+    diff.set(4)
+    
+    timeSelect=tk.StringVar()
+    timeSelect.set("Ilimitado")
+    time=tk.IntVar()
+    time.set(-1)
     #funciones para cada botton de dificultad para que al presionarlos cambie el texto de forma dinámica de (difiSelect)
     def selecFacil():
         difiSelect.set('Fácil')
+        diff.set(2)
     def selecMedio():
         difiSelect.set('Medio')
+        diff.set(4)
     def selecDificil():
         difiSelect.set('Difícil')
+        diff.set(6)
+
+    def timeIlim():
+        timeSelect.set('Ilimitado')
+        time.set(-1)
+
+    def time1():
+        timeSelect.set('1 minuto')
+        time.set(60)
+    
+    def time2():
+        timeSelect.set('2 minutos')
+        time.set(120)
+        
+    def time5():
+        timeSelect.set('5 minutos')
+        time.set(300)
+
+    def comenzarPartida():
+        for elemento in root.winfo_children():
+            elemento.pack_forget() #hacemos que cada cosa dentro del menú se quite
+        t = time.get()
+        d = diff.get()
+        actualizar_temporizador(t,0)
+        generarTablero(d)
 
 ######Esto es para el titulo, el boton de inicio del juego, para la etiqueta de nombre, para ingresar el nombre 
     titulo=tk.Label(root, text='MEMORAMA :)', font=("Lucida Console",25,"bold"),bg="#EB9401",fg="white")
@@ -86,47 +140,66 @@ def menu():
     #etiqueta para 'selecciona la dificultad'
     dificultad=tk.Label(root, text='SELECCIONA LA DIFICULTAD:', font=('Lucida Console',16,'bold'), bg='#EB9401', fg='Black')
     dificultad.pack(pady=5)
+    
     #etiqueta que dice 'dificultad seleccionada'
     seleccionDifi=tk.Label(root, text='Dificultad seleccionada:', font=('Lucida Console', 14, 'bold'), fg='Black', bg='#EB9401')
     seleccionDifi.pack(pady=10)
+    
     #etiqueta que muestra la selección de la dificultad en tiempo real según el usuario escoja:
     lblDinamica=tk.Label(root, textvariable=difiSelect, font=('Lucida Console', 14),fg='Black', bg='#EB9401', padx=10, pady=5)
     lblDinamica.pack(pady=5)
+    
     #Caja donde se guardarán los niveles de dificultad
     dificultad=tk.Frame(root, bg='#EB9401')
     dificultad.pack(pady=10)
+    
     #botón de seleccion nivel facil
     btnFacil=tk.Button(dificultad, text='Nivel fácil', font=('Lucida Console',16), width=20, bg="#BD2600",activebackground="#911F03",fg="white", command=selecFacil)
+    
     #ubicación del botón facil
     btnFacil.grid(row=0, column=0, padx=10)
+    
     #boton de seleccion nivel medio
     btnMedio=tk.Button(dificultad, text='Nivel medio', font=('Lucida Console',16), width=20, bg="#BD2600",activebackground="#911F03",fg="white", command=selecMedio)
+    
     #ubicación del botón medio
     btnMedio.grid(row=0, column=1, padx=10)
+    
     #boton de seleccion nivel dificil
     btnDificil=tk.Button(dificultad, text='Nivel difícil', font=('Lucida Console',16), width=20, bg="#BD2600", activebackground="#911F03",fg="white", command=selecDificil)
+    
     #ubicación del botón dificil
     btnDificil.grid(row=0, column=2, padx=10)
+    
     #Opciones de tiempo (Etiqueta de seleccion de tiempo)
-    time=tk.Label(root, text='SELECCIONA EL TIEMPO:', font=('Lucida Console',16,'bold'), bg='#EB9401', fg='Black')
-    time.pack(pady=5)
-    time=tk.Frame(root, bg='#EB9401')
-    time.pack(pady=10)
+    frame_time=tk.Label(root, text='SELECCIONA EL TIEMPO:', font=('Lucida Console',16,'bold'), bg='#EB9401', fg='Black')
+    frame_time.pack(pady=5)
+    selected_time= tk.Label(root, textvariable=timeSelect, font=('Lucida Console',16,'bold'), bg='#EB9401', fg='Black')
+    selected_time.pack()
+    frame_time=tk.Frame(root, bg='#EB9401')
+    frame_time.pack(pady=10)
 
     #botón de tiempo ilimitado
-    btnIlimitado=tk.Button(time, text='Ilimitado', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white")
+    btnIlimitado=tk.Button(frame_time, text='Ilimitado', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white", command=timeIlim)
+    
     #ubicación tiempo ilimitado
     btnIlimitado.grid(row=0, column=0, padx=8)
+    
     #boton de tiempo 1 minuto
-    btn1=tk.Button(time, text='1 minuto', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white")
+    btn1=tk.Button(frame_time, text='1 minuto', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white",command=time1)
+    
     #ubicación tiempo 1 minuto
     btn1.grid(row=0, column=1, padx=8)
+    
     #boton de tiempo 2 minutos
-    btn2=tk.Button(time, text='2 minutos', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white")
+    btn2=tk.Button(frame_time, text='2 minutos', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white",command=time2)
+    
     #ubicación de tiempo 2 minutos
     btn2.grid(row=0, column=2, padx=8)
+    
     #boton de tiempo 5 minutos
-    btn5=tk.Button(time, text='5 minutos', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white")
+    btn5=tk.Button(frame_time, text='5 minutos', font=('Lucida Console',16), width=10, bg="#BD2600",activebackground="#911F03",fg="white",command=time5)
+    
     #ubicación de tiempo 5 minutos
     btn5.grid(row=0, column=3, padx=8)
     
