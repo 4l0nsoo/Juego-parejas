@@ -1,6 +1,5 @@
 import math 
 import tkinter as tk
-import time
 import random
 
 #idea: juego de parejas por dificultades, facil = 4(rejilla 2x4) parejas, normal = 8(regilla 4x4), dificil 12(regilla 6x4)
@@ -13,15 +12,34 @@ root.config(bg="#EB9401")
 
 cardWidth = 115
 cardHeight =int(cardWidth * 7 / 5)
-tiempo = 100
+tablero = tk.Frame(root)
+tiempo = 0
+nombre = "jugador 1"
 texto_tiempo = tk.StringVar()
-texto_tiempo.set("time has no been set yet")
+
+#Imagenes de comida y signo de interrogación 
+interrogacion = tk.PhotoImage(file="./recursos/interrogacion.png")
+burger = tk.PhotoImage(file="./recursos/hamburguesa.png")
+papas = tk.PhotoImage(file="./recursos/papas.png")
+helado = tk.PhotoImage(file="./recursos/helado.png")
+pastas = tk.PhotoImage(file="./recursos/pastas.png")
+perro = tk.PhotoImage(file="./recursos/perro.png")
+pizza = tk.PhotoImage(file="./recursos/pizza.png")
+pollo = tk.PhotoImage(file="./recursos/pollo.png")
+cafe = tk.PhotoImage(file="./recursos/cafe.png")
+colita = tk.PhotoImage(file="./recursos/colita.png")
+gaseosa = tk.PhotoImage(file="./recursos/gaseosa.png")
+crispetas = tk.PhotoImage(file="./recursos/crispetas.png")
+sushi = tk.PhotoImage(file="./recursos/sushi.png")
 
 matriz_botones = []
+imagenes = [burger,papas,helado,pastas,perro,pizza,pollo,cafe,colita,gaseosa,crispetas,sushi]
 matriz_cartas = []
 eleccion = []
 
-
+def condicionVictoria():
+    tablero.forget()
+    mostrar_victoria("jugador 1", "2:34", 18, 10)
 
 def actualizar_temporizador(tiempo, tiempo_cronometro):
     if tiempo == -1:  # ilimitado, cuenta hacia arriba
@@ -36,43 +54,67 @@ def actualizar_temporizador(tiempo, tiempo_cronometro):
         root.after(1000, actualizar_temporizador, tiempo, tiempo_cronometro)
     else:
         texto_tiempo.set("¡Tiempo terminado!")
+        root.after(1000, condicionVictoria)
+        
 
 #Esta funcion es diseñada para las cartas y su ubicacion
 def generarTablero(dificultad):
     #Temporizador
-    lbl_tiempo = tk.Label(root, textvariable=texto_tiempo, font=("Lucida Console", 18, "bold"),bg="#EB9401", fg="white")
+    tablero.pack()
+    
+    total_pares = (dificultad * 4) // 2  # 4, 8 o 12
+
+    pares = []
+    for i in range(total_pares):
+        pares.append(imagenes[i])
+        pares.append(imagenes[i])
+    
+    random.shuffle(pares)
+    
+    matriz_cartas.clear()
+    for carta in pares:
+        matriz_cartas.append(carta)
+
+    lbl_tiempo = tk.Label(tablero, textvariable=texto_tiempo, font=("Lucida Console", 18, "bold"),bg="#EB9401", fg="white")
     lbl_tiempo.pack(pady=5)
     
-    frame_grid = tk.Frame(root)
+    frame_grid = tk.Frame(tablero)
     frame_grid.pack(pady=(20, 0))
 
     for columna in range(0,dificultad):
         fila_carta=[]
         for fila in range(0,4):
-            card = tk.Button(frame_grid,image=img1,bg="#BD2600",activebackground="#9C0015",fg="white",font=("Lucida Console",20,"bold"), width=cardWidth, height=cardHeight)
-            #card = tk.Label(frame_grid,image=img2,bg="white",highlightbackground="#3541b0",highlightthickness=3,fg="white",font=("Lucida Console",24,"bold"), width=cardWidth, height=cardHeight)
+            card = tk.Button(frame_grid,image=interrogacion,bg="#BD2600",activebackground="#9C0015",fg="white",font=("Lucida Console",20,"bold"), width=cardWidth, height=cardHeight)
+            #card = tk.Label(frame_grid,image=burger,bg="white",highlightbackground="#3541b0",highlightthickness=3,fg="white",font=("Lucida Console",24,"bold"), width=cardWidth, height=cardHeight)
             card.grid(row=fila, column=columna, padx=30, pady=10, )
-            
+            #indice = fila * dificultad + columna
             card.bind("<Button-1>", mostrarCarta)
             fila_carta.append(card)
         matriz_botones.append(fila_carta)
 
-
+# REVISAR ERRORES
 def mostrarCarta(event):
     presionado = event.widget
     info = presionado.grid_info()
     fila = info["row"]
     columna = info["column"]
+    num_columnas = len(matriz_botones)
+    indice = fila * num_columnas + columna
     
-    indice = fila * 4 + columna
-    #card = tk.Label(frame_grid,image=img2,bg="white",highlightbackground="#3541b0",highlightthickness=3,fg="white",font=("Lucida Console",24,"bold"), width=cardWidth, height=cardHeight)
+    presionado.config(image=matriz_cartas[indice],bg="white",highlightbackground="#3541b0",highlightthickness=3,state="disabled")
     
-#necesita recibir el tipo de dificultad seleccionada desde el menú 
-#usar for dentro de for para hacer la rejilla, for padre seria para filas y el de dentro para columnas
+    eleccion.append((matriz_cartas[indice], presionado))
 
-#Imagenes de comida y signo de interrogación 
-img1 = tk.PhotoImage(file="./recursos/interrogacion.png")
-img2 = tk.PhotoImage(file="./recursos/hamburguesa.png")
+    if len(eleccion) == 2:
+        if eleccion[0][0] == eleccion[1][0]: 
+            pass# misma imagen = pareja
+            # dejar volteadas, ya están disabled
+        else:
+            eleccion[0][1].config(image=interrogacion, bg="#BD2600", state="normal")
+            eleccion[1][1].config(image=interrogacion, bg="#BD2600", state="normal")
+        eleccion.clear()
+
+
 
 #funcion para quitar el menú y que aparezcan solo las cartas
 
@@ -204,6 +246,98 @@ def menu():
     btn5.grid(row=0, column=3, padx=8)
     
     boton_iniciar.pack(pady=20) #lo puse aquí porque quería que el botón saliera de último (solo por estética), esto corresponde a la linea 51
+
+def verResultados():
+    pass
+
+def mostrar_victoria(nombre, tiempo, intentos, fail):
+
+    #Fondo negro, en lugar de este deben estar las cartas
+    frame_victory= tk.Frame(root, bg="#1a1a1a")
+    frame_victory.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+    #Tarjeta central gris
+    carta= tk.Frame(frame_victory, bg="#2a2a2a", padx=40, pady=30)
+    carta.place(relx=0.5, rely=0.5, anchor="center")
+
+    #figura de copa
+    Label_titulo=tk.Label(carta, text="🏆", font=("Lucida Console", 40), fg="#FFD700", bg="#2a2a2a" )
+    Label_titulo.pack()
+    # Mensaje "Ganaste"
+    Label_text1=tk.Label(carta, text=f"Ganaste {nombre}", font=("Snap ITC", 25, "bold"),
+                        bg="#2a2a2a",
+                        fg="#FFD700")
+    Label_text1.pack()
+    #Mensaje "Encontraste todas las cartas"
+    Label_text2= tk.Label(carta, text="Encontraste todas las parejas", font=("Lucida Console", 11),
+                        bg="#2a2a2a",
+                        fg="#FFA500")
+    Label_text2.pack()
+
+    #En Esta aparecera los resultados del juego
+    frame_estad= tk.Frame(carta, bg="#2a2a2a",
+                        padx=20, pady=10)
+    frame_estad.pack(fill="x", pady=(0,15))
+
+    #Cuadros con los datos del juego
+    estadisticas= [("Tiempo", tiempo), ("Total de Intentos", intentos), ("Intentos Fallidos", fail)]
+
+    for i, (label, valor) in enumerate(estadisticas):
+        #caracteristicas del cuadro donde se encuentras los datos del juego
+        col= tk.Frame(frame_estad, bg="black", padx=15)
+        col.grid(row=0, column=i, padx=10)
+
+        #Subtitulos de los cuadros
+        tk.Label(col, text=label, font=("Lucida Console", 10, "bold"),
+                bg="black", fg="#FFA500").pack()
+        
+        #Valores principales
+        Label_fund=tk.Label(col, text=str(valor), font=("Lucida Console", 18, "bold"),
+                bg="black", fg="#FFA500")
+        Label_fund.pack()
+    tk.Frame(carta, bg="#ddd", height=1).pack(fill="x", pady=10)
+
+    #Botones
+    
+    #Este Boton tiene que permitir volver a la pantalla principal
+    def volver_menu():                                           #Esta funcion conecta esta interfaz con la principal
+        frame_victory.destroy()
+        menu()
+        
+    boton_volver = tk.Button(carta, text="Volver al menú",
+                        font=("Lucida Console", 12, "bold"),
+                        fg="White",
+                        bg="#9C0015",
+                        borderwidth=2,
+                        activebackground="White",
+                        width=22, pady=8, 
+                        relief="solid",
+                        command=volver_menu)
+    boton_volver.pack(pady=4)
+
+#Este boton debe de permitir ver los resultados de juegos o partidas anteriores
+    boton_resultados= tk. Button(carta, text="Ver resultados",
+                                font=("Lucida Console", 12, "bold"),
+                                fg="white",
+                                bg="#9C0015",
+                                borderwidth=2,
+                                activebackground="white",
+                                width=22, pady=8,
+                                relief="solid",
+                                command=verResultados)
+    boton_resultados.pack(pady=4)
+
+#Este boton permite salir del juego, cerrando directamente la pestaña
+    boton_salir=tk.Button(carta, text="Salir", 
+                        font=("Lucida Console", 12, "bold"),
+                        fg="White",
+                        bg="#9C0015",
+                        borderwidth=2,
+                        activebackground="White",
+                        width=22, pady=8,
+                        relief="solid",
+                        command= root.destroy)
+    boton_salir.pack(pady=(4,0))
 
 menu()
 root.mainloop()
